@@ -4,7 +4,7 @@ This repository contains the necessary tools to setup, train, and test a neural 
 
 ## Setup
 
-Pull down the repository onto the server. Once that's done, the only step left is to set up the training, validation, and testing data. This can be configured in `setup.sh`. The data sets are supplied as a space delimited list to each category. Running the setup script will pull the data from the corresponding folder in storage.
+Pull down the model onto the server. Open up `model.py` and make any necessary changes to the global parameters. You can add hidden layers if you want, or just run it as-is. You can also change the data subset used to train / validate.
 
 ## Training the Model
 
