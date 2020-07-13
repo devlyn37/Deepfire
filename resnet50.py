@@ -7,12 +7,14 @@ import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
+import tensorflow as tf
 
 
-dataset = 'forestOnly' # Name of the folder in /storage/deepfire/subsampledDatasets
+dataset = '../forestOnly-1' # Name of the folder in /storage/deepfire/subsampledDatasets
 output_pdf = True
-pdf_name = 'plot.pdf'
 hidden_layers = [30]
+model_name = 'resnet50'
 
 def main():
     '''
@@ -32,12 +34,10 @@ def main():
 
     # Add our classification layer and display model properties
     fire_detector_model.add(Dense(num_classes, activation='softmax'))
-    fire_detector_model.summary()
 
     # Compile the sections into one NN
     fire_detector_model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
-    
-    
+
     '''
     Training Model
     '''
@@ -48,15 +48,15 @@ def main():
     data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
     
     train_generator = data_generator.flow_from_directory(
-            f'/storage/deepfire/subsampledDatasets/{dataset}/train',
+            f'{dataset}/train',
             target_size=(image_size, image_size),
             batch_size=64,
             class_mode='categorical')
     
     validation_generator = data_generator.flow_from_directory(
-            f'/storage/deepfire/subsampledDatasets/{dataset}/validate',
+            f'{dataset}/validate',
             target_size=(image_size, image_size),
-    	batch_size=64,
+    	    batch_size=64,
             class_mode='categorical')
     
     history = fire_detector_model.fit(
@@ -71,7 +71,7 @@ def main():
     '''
     batch_size = 32
     test_generator = data_generator.flow_from_directory(
-            f'/storage/deepfire/subsampledDatasets/{dataset}/test',
+            f'{dataset}/test',
             target_size=(image_size, image_size),
             batch_size=batch_size,
             class_mode='categorical')
@@ -81,6 +81,31 @@ def main():
 
     if output_pdf:
         create_pdf(history)
+
+    ''' Create and save confusion matrix '''
+    probabilities = fire_detector_model.predict(test_generator)
+    predicitions = np.argmax(probabilities, axis=1)
+    labels = test_generator.classes
+
+    confusion_matrix = tf.math.confusion_matrix(
+    labels, predicitions, num_classes=2, weights=None, dtype=tf.dtypes.int32,
+    name=None
+    )
+
+    with open('model_statistics/' + f'{model_name}_confusion_matrix.txt','w') as fh:
+        # Pass the file handle in as a lambda function to make it callable
+        fh.write(str(confusion_matrix))
+
+    ''' Write Model Summary Statistics '''
+    # Open the file
+    with open('model_statistics/' + f'{model_name}-summary.txt','w') as fh:
+    # Pass the file handle in as a lambda function to make it callable
+        fire_detector_model.summary(print_fn=lambda x: fh.write(x + '\n'))
+
+    '''
+    Save Model
+    '''
+    fire_detector_model.save('saved_models/' + f'{model_name}.h5')
 
 
 def create_pdf(history):
@@ -95,7 +120,7 @@ def create_pdf(history):
     ax.set_yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
     ax.set_ylabel('Value')
     ax.set_title('Model Loss and Accuracy')
-    plt.savefig('./plot.pdf')
+    plt.savefig('./model_statistics/' + f'{model_name}_plot.pdf')
 
 
 if __name__ == "__main__":
