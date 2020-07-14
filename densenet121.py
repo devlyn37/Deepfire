@@ -1,5 +1,5 @@
 import sys
-from tensorflow.keras.applications.efficientnet import EfficientNetB7
+from tensorflow.keras.applications.densenet import DenseNet121
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, GlobalAveragePooling2D
 import pandas as pd
@@ -12,7 +12,7 @@ import seaborn as sns
 dataset = 'forestOnly-1' # Name of the folder in /storage/deepfire/subsampledDatasets
 output_pdf = True
 pdf_name = 'plot.pdf'
-hidden_layers = [90]
+hidden_layers = [30]
 
 def main():
     '''
@@ -22,7 +22,7 @@ def main():
     fire_detector_model = Sequential()
     
     # First section of the NN
-    fire_detector_model.add(EfficientNetB7(include_top=False, pooling='avg', weights='imagenet'))
+    fire_detector_model.add(DenseNet121(include_top=False, pooling='avg', weights='imagenet'))
     fire_detector_model.layers[0].trainable = False
     
     # Second section of the NN
@@ -41,7 +41,7 @@ def main():
     '''
     Training Model
     '''
-    from tensorflow.keras.applications.efficientnet import preprocess_input
+    from tensorflow.keras.applications.densenet import preprocess_input
     from tensorflow.keras.preprocessing.image import ImageDataGenerator
     
     image_size = 224
@@ -50,24 +50,26 @@ def main():
     train_generator = data_generator.flow_from_directory(
             f'/storage/deepfire/subsampledDatasets/{dataset}/train',
             target_size=(image_size, image_size),
-            batch_size=16,
+            batch_size=32,
             class_mode='categorical')
     
     validation_generator = data_generator.flow_from_directory(
             f'/storage/deepfire/subsampledDatasets/{dataset}/validate',
             target_size=(image_size, image_size),
-    	batch_size=16,
+    	batch_size=32,
             class_mode='categorical')
     
     history = fire_detector_model.fit(
             train_generator,
-    	    epochs=5,
-            validation_data=validation_generator)
+    	    epochs=8,
+            steps_per_epoch=52,
+            validation_data=validation_generator,
+            validation_steps=16)
     
     '''
     Testing Model
     '''
-    batch_size = 16
+    batch_size = 32
     test_generator = data_generator.flow_from_directory(
             f'/storage/deepfire/subsampledDatasets/{dataset}/test',
             target_size=(image_size, image_size),
