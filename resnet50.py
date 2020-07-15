@@ -92,20 +92,20 @@ def main():
     name=None
     )
 
-    with open('model_statistics/' + f'{model_name}_confusion_matrix.txt','w') as fh:
+    with open(f'model_statistics/{model_name}_confusion_matrix.txt','w') as fh:
         # Pass the file handle in as a lambda function to make it callable
         fh.write(str(confusion_matrix))
 
     ''' Write Model Summary Statistics '''
     # Open the file
-    with open('model_statistics/' + f'{model_name}-summary.txt','w') as fh:
+    with open(f'model_statistics/{model_name}_summary.txt','w') as fh:
     # Pass the file handle in as a lambda function to make it callable
         fire_detector_model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
     '''
     Save Model
     '''
-    fire_detector_model.save('saved_models/' + f'{model_name}.h5')
+    fire_detector_model.save(f'saved_models/{model_name}.h5')
 
 
 def create_pdf(history):
@@ -120,7 +120,7 @@ def create_pdf(history):
     ax.set_yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
     ax.set_ylabel('Value')
     ax.set_title('Model Loss and Accuracy')
-    plt.savefig('./model_statistics/' + f'{model_name}_plot.pdf')
+    plt.savefig(f'./model_statistics/{model_name}_plot.pdf')
 
 
 if __name__ == "__main__":
