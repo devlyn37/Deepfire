@@ -13,9 +13,10 @@ import tensorflow as tf
 
 dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
-pdf_name = 'plot.pdf'
 hidden_layers = [30]
+model_name = 'densenet121'
 batch_size = 64
+epochs = 3
 
 def main():
     '''
@@ -50,30 +51,30 @@ def main():
     data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
     
     train_generator = data_generator.flow_from_directory(
-            f'/storage/deepfire/subsampledDatasets/{dataset}/train',
+            f'{dataset}/train',
             target_size=(image_size, image_size),
             batch_size=batch_size,
             class_mode='categorical')
     
     validation_generator = data_generator.flow_from_directory(
-            f'/storage/deepfire/subsampledDatasets/{dataset}/validate',
+            f'{dataset}/validate',
             target_size=(image_size, image_size),
     	    batch_size=batch_size,
             class_mode='categorical')
     
     history = fire_detector_model.fit(
             train_generator,
-    	    epochs=5,
+    	    epochs=epochs,
             validation_data=validation_generator)
  
     '''
     Testing Model
     '''
     test_generator = data_generator.flow_from_directory(
-            f'/storage/deepfire/subsampledDatasets/{dataset}/test',
+            f'{dataset}/test',
             target_size=(image_size, image_size),
             batch_size=batch_size,
-            class_mode='categorical'
+            class_mode='categorical',
             shuffle=False)
     fire_detector_model.evaluate(test_generator)
 

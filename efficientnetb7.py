@@ -16,6 +16,7 @@ output_pdf = True
 model_name = 'efficientnetb7'
 hidden_layers = [30]
 batch_size = 16
+epochs = 3
 
 def main():
     '''
@@ -62,7 +63,7 @@ def main():
     
     history = fire_detector_model.fit(
             train_generator,
-    	    epochs=5,
+    	    epochs=epochs,
             validation_data=validation_generator)
     
     '''

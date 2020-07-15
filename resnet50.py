@@ -16,6 +16,7 @@ output_pdf = True
 hidden_layers = [30]
 model_name = 'resnet50'
 batch_size = 64
+epochs = 3
 
 def main():
     '''
@@ -63,7 +64,7 @@ def main():
     
     history = fire_detector_model.fit(
             train_generator,
-    	    epochs=5,
+    	    epochs=epochs,
             validation_data=validation_generator)
     
     '''
