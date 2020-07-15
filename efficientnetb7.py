@@ -11,10 +11,11 @@ import numpy as np
 import tensorflow as tf
 
 
-dataset = '../forestOnly-1' # Name of the folder in /storage/deepfire/subsampledDatasets
+dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
 model_name = 'efficientnetb7'
 hidden_layers = [30]
+batch_size = 16
 
 def main():
     '''
@@ -50,42 +51,35 @@ def main():
     train_generator = data_generator.flow_from_directory(
             f'{dataset}/train',
             target_size=(image_size, image_size),
-            batch_size=64,
+            batch_size=batch_size,
             class_mode='categorical')
     
     validation_generator = data_generator.flow_from_directory(
             f'{dataset}/validate',
             target_size=(image_size, image_size),
-    	batch_size=64,
+    	    batch_size=batch_size,
             class_mode='categorical')
     
     history = fire_detector_model.fit(
             train_generator,
     	    epochs=5,
-            steps_per_epoch=3,
-            validation_data=validation_generator,
-            validation_steps=2)
+            validation_data=validation_generator)
     
     '''
     Testing Model
     '''
-    batch_size = 32
     test_generator = data_generator.flow_from_directory(
             f'{dataset}/test',
             target_size=(image_size, image_size),
             batch_size=batch_size,
             class_mode='categorical')
-    num_files = len(test_generator.filepaths)
-    fire_detector_model.evaluate(test_generator,
-            steps=num_files/batch_size)
+    fire_detector_model.evaluate(test_generator)
 
     if output_pdf:
         create_pdf(history)
 
     ''' Save model summary '''
-    # Open the file
     with open(f'model_statistics/{model_name}_summary.txt','w') as fh:
-        # Pass the file handle in as a lambda function to make it callable
         fire_detector_model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
     ''' Create and save confusion matrix '''
@@ -99,7 +93,6 @@ def main():
     )
 
     with open(f'model_statistics/{model_name}_confusion_matrix.txt','w') as fh:
-        # Pass the file handle in as a lambda function to make it callable
         fh.write(str(confusion_matrix))
 
     '''

@@ -11,10 +11,11 @@ import numpy as np
 import tensorflow as tf
 
 
-dataset = '../forestOnly-1' # Name of the folder in /storage/deepfire/subsampledDatasets
+dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
 hidden_layers = [30]
 model_name = 'resnet50'
+batch_size = 64
 
 def main():
     '''
@@ -50,7 +51,7 @@ def main():
     train_generator = data_generator.flow_from_directory(
             f'{dataset}/train',
             target_size=(image_size, image_size),
-            batch_size=64,
+            batch_size=batch_size,
             class_mode='categorical')
     
     validation_generator = data_generator.flow_from_directory(
@@ -62,9 +63,7 @@ def main():
     history = fire_detector_model.fit(
             train_generator,
     	    epochs=5,
-            steps_per_epoch=3,
-            validation_data=validation_generator,
-            validation_steps=2)
+            validation_data=validation_generator)
     
     '''
     Testing Model
@@ -74,32 +73,26 @@ def main():
             f'{dataset}/test',
             target_size=(image_size, image_size),
             batch_size=batch_size,
-            class_mode='categorical')
-    num_files = len(test_generator.filepaths)
-    fire_detector_model.evaluate(test_generator,
-            steps=num_files/batch_size)
+            class_mode='categorical',
+            shuffle=False)
+    fire_detector_model.evaluate(test_generator)
 
     if output_pdf:
         create_pdf(history)
 
     ''' Create and save confusion matrix '''
     probabilities = fire_detector_model.predict(test_generator)
-    predicitions = np.argmax(probabilities, axis=1)
-    labels = test_generator.classes
+    predictions = np.argmax(probabilities, axis=1)
 
+    labels = test_generator.classes
     confusion_matrix = tf.math.confusion_matrix(
-    labels, predicitions, num_classes=2, weights=None, dtype=tf.dtypes.int32,
-    name=None
-    )
+    	labels, predictions, num_classes=2, weights=None, dtype=tf.dtypes.int32, name=None)
 
     with open(f'model_statistics/{model_name}_confusion_matrix.txt','w') as fh:
-        # Pass the file handle in as a lambda function to make it callable
         fh.write(str(confusion_matrix))
 
     ''' Write Model Summary Statistics '''
-    # Open the file
     with open(f'model_statistics/{model_name}_summary.txt','w') as fh:
-    # Pass the file handle in as a lambda function to make it callable
         fire_detector_model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
     '''
