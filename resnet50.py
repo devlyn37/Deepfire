@@ -56,7 +56,7 @@ def main():
     validation_generator = data_generator.flow_from_directory(
             f'{dataset}/validate',
             target_size=(image_size, image_size),
-    	    batch_size=64,
+            batch_size=64,
             class_mode='categorical')
     
     history = fire_detector_model.fit(
