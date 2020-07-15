@@ -1,5 +1,5 @@
 import sys
-from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications.densenet import DenseNet121
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, GlobalAveragePooling2D
 import pandas as pd
@@ -13,8 +13,8 @@ import tensorflow as tf
 
 dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
+pdf_name = 'plot.pdf'
 hidden_layers = [30]
-model_name = 'resnet50'
 batch_size = 64
 
 def main():
@@ -25,7 +25,7 @@ def main():
     fire_detector_model = Sequential()
     
     # First section of the NN
-    fire_detector_model.add(ResNet50(include_top=False, pooling='avg', weights='imagenet'))
+    fire_detector_model.add(DenseNet121(include_top=False, pooling='avg', weights='imagenet'))
     fire_detector_model.layers[0].trainable = False
     
     # Second section of the NN
@@ -38,42 +38,42 @@ def main():
     fire_detector_model.summary()
 
     # Compile the sections into one NN
-    fire_detector_model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
-
+    fire_detector_model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy']) 
+    
     '''
     Training Model
     '''
-    from tensorflow.keras.applications.resnet50 import preprocess_input
+    from tensorflow.keras.applications.densenet import preprocess_input
     from tensorflow.keras.preprocessing.image import ImageDataGenerator
     
     image_size = 224
     data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
     
     train_generator = data_generator.flow_from_directory(
-            f'{dataset}/train',
+            f'/storage/deepfire/subsampledDatasets/{dataset}/train',
             target_size=(image_size, image_size),
             batch_size=batch_size,
             class_mode='categorical')
     
     validation_generator = data_generator.flow_from_directory(
-            f'{dataset}/validate',
+            f'/storage/deepfire/subsampledDatasets/{dataset}/validate',
             target_size=(image_size, image_size),
-            batch_size=64,
+    	    batch_size=batch_size,
             class_mode='categorical')
     
     history = fire_detector_model.fit(
             train_generator,
     	    epochs=5,
             validation_data=validation_generator)
-    
+ 
     '''
     Testing Model
     '''
     test_generator = data_generator.flow_from_directory(
-            f'{dataset}/test',
+            f'/storage/deepfire/subsampledDatasets/{dataset}/test',
             target_size=(image_size, image_size),
             batch_size=batch_size,
-            class_mode='categorical',
+            class_mode='categorical'
             shuffle=False)
     fire_detector_model.evaluate(test_generator)
 
@@ -86,7 +86,7 @@ def main():
 
     labels = test_generator.classes
     confusion_matrix = tf.math.confusion_matrix(
-    	labels, predictions, num_classes=2, weights=None, dtype=tf.dtypes.int32, name=None)
+        labels, predictions, num_classes=2, weights=None, dtype=tf.dtypes.int32, name=None)
 
     with open(f'model_statistics/{model_name}_confusion_matrix.txt','w') as fh:
         fh.write(str(confusion_matrix))
@@ -113,7 +113,7 @@ def create_pdf(history):
     ax.set_yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
     ax.set_ylabel('Value')
     ax.set_title('Model Loss and Accuracy')
-    plt.savefig(f'./model_statistics/{model_name}_plot.pdf')
+    plt.savefig('./plot.pdf')
 
 
 if __name__ == "__main__":
