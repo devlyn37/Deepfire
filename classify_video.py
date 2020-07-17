@@ -3,10 +3,11 @@ import math
 import time
 from cv2 import VideoCapture
 from tensorflow import keras
-import resnet50
 import os
+from tensorflow.keras.applications.resnet50 import preprocess_input
 
 LABELS = ["fire", "no fire"]
+frames_per_second = 4
 
 def get_image_generator(filename=None):
 
@@ -16,7 +17,7 @@ def get_image_generator(filename=None):
     else:
         cap = cv2.VideoCapture(0)
 
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    fps = cap.get(cv2.CAP_PROP_FPS)/frames_per_second
 
     while True:
 
@@ -43,23 +44,23 @@ def get_image_generator(filename=None):
 
 
 def resize(img):
-    return cv2.resize(img, (224, 224)).reshape(1, 224, 224, 3)/255.0
+    return cv2.resize(img, (224, 224)).reshape(1, 224, 224, 3)
 
 
 def main():
 
-    model = keras.models.load_model('./saved-model')
+    model = keras.models.load_model('saved_models/resnet50')
 
-    fp = open('framebyframe.txt', 'w')
+    #fp = open('framebyframe.txt', 'w')
 
     image_generator = get_image_generator('./aerial_video.mp4')
     # image_generator = get_image_generator()
 
     for frame in image_generator:
-        res = model(resize(frame), training=False)
-        result_label = LABELS[res.numpy().argmax()]
-        fp.write(str(result_label)+"\n")
-        print(result_label)
+        res = model.predict(preprocess_input(resize(frame)))
+        result_label = LABELS[res.argmax()]
+        #fp.write(str(result_label)+"\n")
+        print(f'{result_label} - {res[0]}')
         if "DISPLAY" in os.environ:
             cv2.imshow('frame', frame)
             while False:
