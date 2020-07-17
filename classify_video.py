@@ -67,6 +67,6 @@ def main():
                 if cv2.waitKey(1) & 0xFF == ord('r'):
                     break
 
-    fp.close()
+    #fp.close()
 if __name__ == '__main__':
     main()
