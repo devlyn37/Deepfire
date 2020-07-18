@@ -1,6 +1,8 @@
 import lib
 from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten, GlobalAveragePooling2D
 
 dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
@@ -13,11 +15,11 @@ epochs = 5
 
 
 def main():
-    fire_detector_model = keras.Sequential([
-        keras.layers.Flatten(),
-        keras.layers.Dense(25, activation="relu"),
-        keras.layers.Dense(10, activation="relu"),
-        keras.layers.Dense(2, activation='softmax')
+    fire_detector_model = Sequential([
+        Flatten(),
+        Dense(25, activation="relu"),
+        Dense(10, activation="relu"),
+        Dense(2, activation='softmax')
     ])
 
     fire_detector_model.compile(optimizer='rmsprop',
