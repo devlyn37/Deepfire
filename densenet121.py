@@ -12,6 +12,10 @@ num_classes = 2
 batch_size = 64
 epochs = 3
 
+# Multiclass Settings
+# dataset = '/storage/deepfire/subsampledDatasets/forest-1-smoke-fire-forest' # Name of the folder in /storage/deepfire/subsampledDatasets
+# num_classes = 3
+
 
 def main():
     baseModel = DenseNet121(

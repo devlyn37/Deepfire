@@ -12,6 +12,10 @@ num_classes = 2
 batch_size = 64
 epochs = 3
 
+# Multiclass Settings
+# dataset = '/storage/deepfire/subsampledDatasets/forest-1-smoke-fire-forest'
+# num_classes = 3
+
 
 def main():
     baseModel = ResNet50(include_top=False, pooling='avg', weights='imagenet')
