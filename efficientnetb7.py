@@ -4,7 +4,7 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 
 dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
-output_confusion_matrix = False
+output_statistics = False
 image_size = 224
 model_name = 'efficientnetb7'
 hidden_layers = [30]
@@ -28,7 +28,7 @@ def main():
     lib.create_pdf(history, model_name)
 
     lib.testModel(fire_detector_model, batch_size, dataset,
-                  num_classes, model_name, image_size, preprocess_input, output_confusion_matrix)
+                  num_classes, model_name, image_size, preprocess_input, output_statistics)
     fire_detector_model.save(f'saved_models/{model_name}.h5')
 
 

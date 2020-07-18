@@ -4,7 +4,7 @@ from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras import Input, Model, models
 
 dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
-output_confusion_matrix = False
+output_statistics = False
 image_size = 224
 num_classes = 2
 model_name = "ensemble_model"
@@ -30,7 +30,7 @@ def main():
         optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
 
     lib.testModel(ensemble_model, 64, dataset, num_classes,
-                  model_name, image_size, preprocess_input, output_confusion_matrix)
+                  model_name, image_size, preprocess_input, output_statistics)
 
 
 if __name__ == "__main__":

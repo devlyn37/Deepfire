@@ -78,7 +78,7 @@ def create_pdf(history, model_name):
     print("Done")
 
 
-def generateConfusionMatrix(model, test_generator, model_name, num_classes):
+def generateStatistics(model, test_generator, model_name, num_classes):
     print("Generating Confusion Matrix for " + model_name)
     probabilities = model.predict(test_generator)
     predictions = np.argmax(probabilities, axis=1)
@@ -96,7 +96,7 @@ def generateConfusionMatrix(model, test_generator, model_name, num_classes):
     print("Done")
 
 
-def testModel(model, batch_size, datasetPath, num_classes, model_name, image_size, preprocess_input, output_confusion_matrix=True):
+def testModel(model, batch_size, datasetPath, num_classes, model_name, image_size, preprocess_input, output_statistics=True):
     data_generator = ImageDataGenerator(
         preprocessing_function=preprocess_input)
 
@@ -110,5 +110,5 @@ def testModel(model, batch_size, datasetPath, num_classes, model_name, image_siz
 
     model.evaluate(test_generator, steps=num_files/batch_size)
 
-    if(output_confusion_matrix):
-        generateConfusionMatrix(model, test_generator, model_name, num_classes)
+    if(output_statistics):
+        generateStatistics(model, test_generator, model_name, num_classes)
