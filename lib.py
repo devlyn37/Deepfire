@@ -50,6 +50,8 @@ def trainModel(datasetPath, model, epochs, batch_size, image_size, preprocess_in
         class_mode='categorical')
     num_validation_files = len(validation_generator.filepaths)
 
+    # The division by 5 here is to make training quicker
+    # when you want maximum accuracy remove it.
     return model.fit(
         train_generator,
         epochs=epochs,
