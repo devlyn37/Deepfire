@@ -1,16 +1,16 @@
 import lib
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 output_pdf = True
 output_statistics = False
 image_size = 224
-model_name = 'resnet50'
-hidden_layers = [90]
+model_name = 'mobilenet'
+hidden_layers = [30]
 num_classes = 2
-batch_size = 32
-epochs = 1
+batch_size = 64
+epochs = 35
 
 # Multiclass Settings
 # dataset = '/storage/deepfire/subsampledDatasets/forest-1-smoke-fire-forest'
@@ -18,7 +18,7 @@ epochs = 1
 
 
 def main():
-    baseModel = ResNet50(include_top=False, pooling='avg', weights='imagenet')
+    baseModel = MobileNetV2(include_top=False, pooling='avg', weights='imagenet')
     fire_detector_model = lib.createModel(
         baseModel, hidden_layers, num_classes)
 

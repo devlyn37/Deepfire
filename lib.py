@@ -1,3 +1,5 @@
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import tensorflow as tf
 import numpy as np
 import seaborn as sns
@@ -16,7 +18,7 @@ def createModel(baseModel, hidden_layers, num_classes):
 
     # Transfer Learning
     model.add(baseModel)
-    model.layers[0].trainable = False
+    model.layers[0].trainable = True
 
     # Hidden Layers
     for layer in range(len(hidden_layers)):
@@ -55,9 +57,7 @@ def trainModel(datasetPath, model, epochs, batch_size, image_size, preprocess_in
     return model.fit(
         train_generator,
         epochs=epochs,
-        steps_per_epoch=num_training_files/batch_size / 5,
-        validation_data=validation_generator,
-        validation_steps=num_validation_files/batch_size / 5)
+        validation_data=validation_generator)
 
 
 def create_pdf(history, model_name):

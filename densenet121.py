@@ -9,8 +9,8 @@ image_size = 224
 model_name = 'densenet121'
 hidden_layers = [30]
 num_classes = 2
-batch_size = 64
-epochs = 3
+batch_size = 32
+epochs = 5
 
 # Multiclass Settings
 # dataset = '/storage/deepfire/subsampledDatasets/forest-1-smoke-fire-forest' # Name of the folder in /storage/deepfire/subsampledDatasets
