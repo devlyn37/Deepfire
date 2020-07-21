@@ -3,6 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import sys
+import os
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, GlobalAveragePooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -87,20 +88,31 @@ def create_pdf(history, model_name):
     print("Done")
 
 
-def generateStatistics(model, test_generator, model_name, num_classes):
+def generateStatistics(model, test_generator, model_name, num_classes, steps):
     print("Generating Confusion Matrix for " + model_name)
-    probabilities = model.predict(test_generator)
+    test_generator.reset()
+    probabilities = model.predict(test_generator, steps=steps)
     predictions = np.argmax(probabilities, axis=1)
 
     labels = test_generator.classes
     confusion_matrix = tf.math.confusion_matrix(
         labels, predictions, num_classes=num_classes, weights=None, dtype=tf.dtypes.int32, name=None)
 
-    with open(f'model_statistics/{model_name}_confusion_matrix.txt', 'w') as fh:
+    try:
+        os.mkdir(f'model_statistics/{model_name}/')
+    except OSError as error:
+        pass
+
+    with open(f'model_statistics/{model_name}/confusion_matrix.txt', 'w') as fh:
         fh.write(str(confusion_matrix))
 
-    with open(f'model_statistics/{model_name}_summary.txt', 'w') as fh:
+    with open(f'model_statistics/{model_name}/summary.txt', 'w') as fh:
         model.summary(print_fn=lambda x: fh.write(x + '\n'))
+
+    with open(f'model_statistics/{model_name}/misclassified_images.txt', 'w') as fh:
+        for i,prediction in enumerate(predictions):
+            if prediction != test_generator.classes[i]:
+                fh.write(test_generator.filepaths[i]+'\n')
 
     print("Done")
 
@@ -114,10 +126,12 @@ def testModel(model, batch_size, datasetPath, num_classes, model_name, image_siz
         f'{datasetPath}/test',
         target_size=(image_size, image_size),
         batch_size=batch_size,
-        class_mode='categorical')
+        class_mode='categorical',
+        shuffle=False)
     num_files = len(test_generator.filepaths)
 
-    model.evaluate(test_generator, steps=num_files/batch_size)
+    steps = num_files/batch_size
+    model.evaluate(test_generator, steps=steps)
 
     if(output_statistics):
-        generateStatistics(model, test_generator, model_name, num_classes)
+        generateStatistics(model, test_generator, model_name, num_classes, steps)
