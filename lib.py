@@ -10,6 +10,9 @@ import pandas as pd
 import matplotlib
 matplotlib.use('pdf')
 
+METRICS = ['accuracy',
+      tf.keras.metrics.Precision(name='precision'),
+      tf.keras.metrics.Recall(name='recall')]
 
 def createModel(baseModel, hidden_layers, num_classes):
     model = Sequential()
@@ -28,7 +31,7 @@ def createModel(baseModel, hidden_layers, num_classes):
 
     # Compile the sections into one NN
     model.compile(optimizer='sgd', loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+                  metrics=METRICS)
     return model
 
 
@@ -63,10 +66,14 @@ def trainModel(datasetPath, model, epochs, batch_size, image_size, preprocess_in
 def create_pdf(history, model_name):
     print("Generating pdf for " + model_name)
 
-    df = pd.DataFrame(history.history)
+    # grab the desired metrics from tf history
+    desired_metrics = ['accuracy', 'loss', 'val_accuracy', 'val_loss']
+    metrics_to_plot = dict((k, history.history[k]) for k in desired_metrics if k in history.history)
+
+    df = pd.DataFrame(metrics_to_plot)
     df.index = range(1, len(df)+1)
     df.rename(columns={'accuracy': 'Training Accuracy', 'loss': 'Training Loss',
-                       'val_accuracy': 'Validation Accuracy', 'val_loss': 'Validation Loss'}, inplace=True)
+        'val_accuracy': 'Validation Accuracy', 'val_loss': 'Validation Loss'}, inplace=True)
     print(df)
     sns.set()
     ax = sns.lineplot(hue='event', marker='o', dashes=False, data=df)

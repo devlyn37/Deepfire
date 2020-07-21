@@ -27,7 +27,7 @@ def main():
     outputs = maximum([y1, y2])
     ensemble_model = Model(inputs=inputs, outputs=outputs)
     ensemble_model.compile(
-        optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
+        optimizer='sgd', loss='categorical_crossentropy', metrics=lib.METRICS)
 
     lib.testModel(ensemble_model, 64, dataset, num_classes,
                   model_name, image_size, preprocess_input, output_statistics)
