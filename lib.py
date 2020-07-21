@@ -5,6 +5,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import sys
+import os
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, GlobalAveragePooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -12,6 +13,9 @@ import pandas as pd
 import matplotlib
 matplotlib.use('pdf')
 
+METRICS = ['accuracy',
+      tf.keras.metrics.Precision(name='precision'),
+      tf.keras.metrics.Recall(name='recall')]
 
 def createModel(baseModel, hidden_layers, num_classes):
     model = Sequential()
@@ -30,7 +34,7 @@ def createModel(baseModel, hidden_layers, num_classes):
 
     # Compile the sections into one NN
     model.compile(optimizer='sgd', loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+                  metrics=METRICS)
     return model
 
 
@@ -63,10 +67,14 @@ def trainModel(datasetPath, model, epochs, batch_size, image_size, preprocess_in
 def create_pdf(history, model_name):
     print("Generating pdf for " + model_name)
 
-    df = pd.DataFrame(history.history)
+    # grab the desired metrics from tf history
+    desired_metrics = ['accuracy', 'loss', 'val_accuracy', 'val_loss']
+    metrics_to_plot = dict((k, history.history[k]) for k in desired_metrics if k in history.history)
+
+    df = pd.DataFrame(metrics_to_plot)
     df.index = range(1, len(df)+1)
     df.rename(columns={'accuracy': 'Training Accuracy', 'loss': 'Training Loss',
-                       'val_accuracy': 'Validation Accuracy', 'val_loss': 'Validation Loss'}, inplace=True)
+        'val_accuracy': 'Validation Accuracy', 'val_loss': 'Validation Loss'}, inplace=True)
     print(df)
     sns.set()
     ax = sns.lineplot(hue='event', marker='o', dashes=False, data=df)
@@ -80,20 +88,31 @@ def create_pdf(history, model_name):
     print("Done")
 
 
-def generateStatistics(model, test_generator, model_name, num_classes):
+def generateStatistics(model, test_generator, model_name, num_classes, steps):
     print("Generating Confusion Matrix for " + model_name)
-    probabilities = model.predict(test_generator)
+    test_generator.reset()
+    probabilities = model.predict(test_generator, steps=steps)
     predictions = np.argmax(probabilities, axis=1)
 
     labels = test_generator.classes
     confusion_matrix = tf.math.confusion_matrix(
         labels, predictions, num_classes=num_classes, weights=None, dtype=tf.dtypes.int32, name=None)
 
-    with open(f'model_statistics/{model_name}_confusion_matrix.txt', 'w') as fh:
+    try:
+        os.mkdir(f'model_statistics/{model_name}/')
+    except OSError as error:
+        pass
+
+    with open(f'model_statistics/{model_name}/confusion_matrix.txt', 'w') as fh:
         fh.write(str(confusion_matrix))
 
-    with open(f'model_statistics/{model_name}_summary.txt', 'w') as fh:
+    with open(f'model_statistics/{model_name}/summary.txt', 'w') as fh:
         model.summary(print_fn=lambda x: fh.write(x + '\n'))
+
+    with open(f'model_statistics/{model_name}/misclassified_images.txt', 'w') as fh:
+        for i,prediction in enumerate(predictions):
+            if prediction != test_generator.classes[i]:
+                fh.write(test_generator.filepaths[i]+'\n')
 
     print("Done")
 
@@ -107,10 +126,12 @@ def testModel(model, batch_size, datasetPath, num_classes, model_name, image_siz
         f'{datasetPath}/test',
         target_size=(image_size, image_size),
         batch_size=batch_size,
-        class_mode='categorical')
+        class_mode='categorical',
+        shuffle=False)
     num_files = len(test_generator.filepaths)
 
-    model.evaluate(test_generator, steps=num_files/batch_size)
+    steps = num_files/batch_size
+    model.evaluate(test_generator, steps=steps)
 
     if(output_statistics):
-        generateStatistics(model, test_generator, model_name, num_classes)
+        generateStatistics(model, test_generator, model_name, num_classes, steps)

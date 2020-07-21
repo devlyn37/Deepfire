@@ -13,7 +13,6 @@ image_size = 224
 num_classes = 2
 epochs = 5
 
-
 def main():
     fire_detector_model = Sequential([
         Flatten(),
@@ -24,7 +23,7 @@ def main():
 
     fire_detector_model.compile(optimizer='rmsprop',
                                 loss='categorical_crossentropy',
-                                metrics=['accuracy'])
+                                metrics=lib.METRICS)
 
     history = lib.trainModel(dataset, fire_detector_model,
                              epochs, batch_size, image_size, preprocess_input)
