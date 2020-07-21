@@ -10,7 +10,7 @@ model_name = 'resnet50'
 hidden_layers = [90]
 num_classes = 2
 batch_size = 32
-epochs = 1
+epochs = 3
 
 # Multiclass Settings
 # dataset = '/storage/deepfire/subsampledDatasets/forest-1-smoke-fire-forest'
