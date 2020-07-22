@@ -12,7 +12,6 @@ method = 'pooling' # must be 'voting' or 'pooling'
 
 
 def main():
-    # Prepare image preprocessors for each model
     image_generator = ImageDataGenerator().flow_from_directory(
             f'{dataset}/test',
             target_size=(image_size, image_size),
