@@ -7,9 +7,9 @@ output_pdf = True
 output_statistics = False
 image_size = 224
 model_name = 'resnet50'
-hidden_layers = [30]
+hidden_layers = [90]
 num_classes = 2
-batch_size = 64
+batch_size = 32
 epochs = 3
 
 # Multiclass Settings
