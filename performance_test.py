@@ -1,17 +1,11 @@
 import classify_video
 import ensemble_voting as em
-import lib
 import time
 import os
 from tensorflow import keras
 from tensorflow.keras.applications.resnet50 import preprocess_input
 
-DATASET = '../forestOnly-1'
-NUM_CLASSES = 2
-IMAGE_SIZE = 224
-OUTPUT_STATISTICS = True
 INFERENCE_TEST_IMAGE_COUNT = 469
-BATCH_SIZE = 64
 
 def run_inference_tests(models):
     for model in models:
@@ -45,13 +39,6 @@ def execute_inference_test(model):
     # return the average inference time over all the classified images
     return total_time/INFERENCE_TEST_IMAGE_COUNT
 
-def collect_model_statistics(models):
-    for model in models:
-
-        # skip the ensemble models as they don't have implementations of evaluate/predict
-        if not (model == 'ensemble_voting' or model == 'ensemble_pooling'):
-            lib.testModel(models[model], BATCH_SIZE, DATASET, NUM_CLASSES, model, IMAGE_SIZE, preprocess_input, OUTPUT_STATISTICS)
-
 def init():
     # load models 
     models = {
@@ -72,7 +59,5 @@ def init():
     # perform inference tests 
     print('Running Inference Tests...')
     run_inference_tests(models)
-    print('Collecting Model Statistics...')
-    collect_model_statistics(models)
 
 init()
