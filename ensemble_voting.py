@@ -1,54 +1,65 @@
-# Sample program to predict an image using an existing model saved in an .h5 file
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 from tensorflow import keras
 import numpy as np
-from tensorflow.keras.applications.resnet50 import preprocess_input as res_preproc
-from tensorflow.keras.applications.densenet import preprocess_input as dense_preproc
-from tensorflow.keras.applications.mobilenet import preprocess_input as mobile_preproc
-
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-dataset = "/storage/deepfire/subsampledDatasets/forestOnly-1"
+dataset = '/storage/deepfire/subsampledDatasets/forestOnly-1'
 image_size = 224
-batch_size = 64
+batch_size = 32
+method = 'pooling' # must be 'voting' or 'pooling'
 
-# Prepare image preprocessors for each model
-res_generator = ImageDataGenerator(preprocessing_function=res_preproc).flow_from_directory(
+
+
+def main():
+    image_generator = ImageDataGenerator().flow_from_directory(
             f'{dataset}/test',
             target_size=(image_size, image_size),
-            batch_size=batch_size,
             class_mode='categorical',
-            shuffle=False)
-
-dense_generator = ImageDataGenerator(preprocessing_function=dense_preproc).flow_from_directory(
-            f'{dataset}/test',
-            target_size=(image_size, image_size),
             batch_size=batch_size,
-            class_mode='categorical',
             shuffle=False)
-
-mobile_generator = ImageDataGenerator(preprocessing_function=mobile_preproc).flow_from_directory(
-            f'{dataset}/test',
-            target_size=(image_size, image_size),
-            batch_size=batch_size,
-            class_mode='categorical',
-            shuffle=False)
-
-res_model = keras.models.load_model("saved_models/resnet50.h5")
-dense_model = keras.models.load_model("saved_models/densenet121.h5")
-mobile_model = keras.models.load_model("saved_models/mobilenet.h5")
-
-res_prediction = np.array([res.argmax() for res in res_model.predict(res_generator)])
-dense_prediction = np.array([res.argmax() for res in dense_model.predict(dense_generator)])
-mobile_prediction = np.array([res.argmax() for res in mobile_model.predict(mobile_generator)])
+    ensemble = EnsembleModel('voting')
+    
+    pred = []
+    gt = image_generator.labels
+    print('performing inference...')
+    for x in range(len(image_generator)):
+        sample = image_generator.next() # retrieves the next image
+        pred = np.concatenate((pred, ensemble.predict(sample[0])))
+    
+    # accuracy
+    acc = 1-(len(np.nonzero(pred-gt))/len(image_generator))
+    print(acc)
 
 
-ensemble_prediction = np.rint((res_prediction + dense_prediction + mobile_prediction)/3)
+class EnsembleModel:
+    def __init__(self, method):
+        self.method = method
+        self.models = []
+        print('loading resnet')    
+        from tensorflow.keras.applications.resnet50 import preprocess_input as res_preproc
+        res_model = keras.models.load_model("saved_models/resnet50.h5")
+        self.models.append((res_preproc, res_model))
+        
+        print('loading densenet')
+        from tensorflow.keras.applications.densenet import preprocess_input as dense_preproc
+        dense_model = keras.models.load_model("saved_models/densenet121.h5")
+        self.models.append((dense_preproc, dense_model))
+        
+        print('loading mobilenet')
+        from tensorflow.keras.applications.mobilenet import preprocess_input as mobile_preproc
+        mobile_model = keras.models.load_model("saved_models/mobilenet.h5")
+        self.models.append((mobile_preproc, mobile_model))
+
+    def predict(self, sample):
+        predictions = []
+        for model in self.models:
+            predictions.append(model[1].predict(model[0](sample)))
+        if self.method == 'pooling':
+            return np.argmax(sum(predictions), axis=1)
+        elif self.method == 'voting':
+            return np.rint(sum([np.argmax(x, axis=1) for x in predictions])/len(self.models))
 
 
-def accuracy(preds):
-  return 1-np.count_nonzero(res_generator.labels-preds)/len(res_generator.labels)
-
-print(f'resnet accuracy: {accuracy(res_prediction)}')
-print(f'densenet accuracy: {accuracy(dense_prediction)}')
-print(f'mobilenet accuracy: {accuracy(mobile_prediction)}')
-print(f'ensemble accuracy: {accuracy(ensemble_prediction)}')
+if __name__ == "__main__":
+    main()
