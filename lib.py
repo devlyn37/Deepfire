@@ -88,10 +88,10 @@ def create_pdf(history, model_name):
     print("Done")
 
 
-def generateStatistics(model, test_generator, model_name, num_classes, steps):
+def generateStatistics(model, test_generator, model_name, num_classes, steps, loss, accuracy):
     print("Generating Confusion Matrix for " + model_name)
     test_generator.reset()
-    probabilities = model.predict(test_generator, steps=steps)
+    probabilities = model.predict(test_generator)
     predictions = np.argmax(probabilities, axis=1)
 
     labels = test_generator.classes
@@ -103,6 +103,12 @@ def generateStatistics(model, test_generator, model_name, num_classes, steps):
     except OSError as error:
         pass
 
+    with open(f'model_statistics/{model_name}/loss.txt', 'w') as fh:
+        fh.write(str(loss))
+
+    with open(f'model_statistics/{model_name}/accuracy.txt', 'w') as fh:
+        fh.write(str(accuracy))
+        
     with open(f'model_statistics/{model_name}/confusion_matrix.txt', 'w') as fh:
         fh.write(str(confusion_matrix))
 
@@ -131,7 +137,8 @@ def testModel(model, batch_size, datasetPath, num_classes, model_name, image_siz
     num_files = len(test_generator.filepaths)
 
     steps = num_files/batch_size
-    model.evaluate(test_generator, steps=steps)
+
+    loss, accuracy = model.evaluate(test_generator, steps=steps)
 
     if(output_statistics):
-        generateStatistics(model, test_generator, model_name, num_classes, steps)
+        generateStatistics(model, test_generator, model_name, num_classes, steps, loss, accuracy)
