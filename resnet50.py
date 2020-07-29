@@ -7,10 +7,10 @@ output_pdf = True
 output_statistics = False
 image_size = 224
 model_name = 'resnet50'
-hidden_layers = [90]
+hidden_layers = [60]
 num_classes = 2
-batch_size = 32
-epochs = 3
+batch_size = 128
+epochs = 5
 
 # Multiclass Settings
 # dataset = '/storage/deepfire/subsampledDatasets/forest-1-smoke-fire-forest'

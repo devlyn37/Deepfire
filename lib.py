@@ -22,7 +22,7 @@ def createModel(baseModel, hidden_layers, num_classes):
 
     # Transfer Learning
     model.add(baseModel)
-    model.layers[0].trainable = True
+    model.layers[0].trainable = False
 
     # Hidden Layers
     for layer in range(len(hidden_layers)):
@@ -138,7 +138,6 @@ def testModel(model, batch_size, datasetPath, num_classes, model_name, image_siz
 
     steps = num_files/batch_size
 
-    loss, accuracy = model.evaluate(test_generator, steps=steps)
-
+    model.evaluate(test_generator, steps=steps)
     if(output_statistics):
         generateStatistics(model, test_generator, model_name, num_classes, steps, loss, accuracy)
