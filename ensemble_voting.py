@@ -51,7 +51,26 @@ class EnsembleModel:
         mobile_model = keras.models.load_model("saved_models/mobilenet.h5")
         self.models.append((mobile_preproc, mobile_model))
 
-    def predict(self, sample):
+    def evaluate(self, test_generator):
+        results = np.array([], dtype=int)
+        gt = test_generator.labels
+        for x in range(len(test_generator)):
+            samples = test_generator.next()
+            res = self.predict_from_samples(samples[0])
+            results = np.concatenate((results, res))
+        accuracy = 1-(len(np.nonzero(results-gt))/len(test_generator))
+        return [0, accuracy] # not calculating loss; way too much work for the amount of time left
+
+    def predict(self, test_generator):
+        results = np.array([], dtype=int)
+        print(len(test_generator))
+        for x in range(len(test_generator)):
+            samples = test_generator.next()
+            res = self.predict_from_samples(samples[0])
+            results = np.concatenate((results, res))
+        return results
+
+    def predict_from_samples(self, sample):
         predictions = []
         for model in self.models:
             predictions.append(model[1].predict(model[0](sample)))
