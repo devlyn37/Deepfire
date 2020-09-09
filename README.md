@@ -1,6 +1,17 @@
 # UAV Forest Fire Detection Model
 
-This repository contains the necessary tools to setup, train, and test a neural network for forest fire recognition.
+This repository contains the necessary tools to setup, train, and test a neural network for forest fire recognition. 
+
+The [project_results](/project_results/) directory contains a report and poster discussing the design and performance of the final product.  
+In summary:
+- 2596 aerial forest images were collected.
+- 6 models were compared with an emphasis on accuracy and inference time.  
+- The best model uses tranfer learning with ResNet50 to achieve an accuracy above 90% with an inference time of under 1 second.  
+
+## Demo
+
+Here is a demo of the model using ResNet50.  
+![](/project_results/deepfireDemoClip.gif)
 
 ## Setup
 
