@@ -6,7 +6,7 @@ The [project_results](/project_results/) directory contains a report and poster 
 In summary:
 - 2596 aerial forest images were collected.
 - 6 models were compared with an emphasis on accuracy and inference time.  
-- The best model uses tranfer learning with ResNet50 to achieve an accuracy above 90% with an inference time of under 1 second.  
+- The best model uses transfer learning with ResNet50 to achieve an accuracy above 90% with an inference time of under 1 second.  
 
 ## Demo
 
